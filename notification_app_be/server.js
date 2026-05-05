@@ -1,4 +1,5 @@
 require("dotenv").config({ path: "../.env" });//from root env created
+const getTopNotifications = require("./priority");
 
 const express = require("express");
 const cors = require("cors");
@@ -16,26 +17,32 @@ app.get("/notifications", async (req, res) => {
     await Log("backend", "info", "handler", "GET /notifications called");
 
     try {
-        const data = [
-            {
-                id: 1,
-                type: "Event",
-                message: "New Hackathon",
-                isRead: false,
-                timestamp: Date.now()
-            },
-            {
-                id: 2,
-                type: "Placement",
-                message: "Amazon interview scheduled",
-                isRead: false,
-                timestamp: Date.now()
-            }
-        ];
+    const now = Date.now();
+
+const data = [
+    {
+        id: 1,
+        type: "Event",
+        message: "New Hackathon",
+        isRead: false,
+        timestamp: now - 100000
+    },
+    {
+        id: 2,
+        type: "Placement",
+        message: "Amazon interview scheduled",
+        isRead: false,
+        timestamp: now
+    }
+];
 
         await Log("backend", "info", "service", "Notifications fetched");
 
-        res.json(data);
+        const top = getTopNotifications(data);
+
+await Log("backend", "info", "service", "Top notifications calculated");
+
+res.json(top);
 
     } catch (err) {
 
@@ -75,6 +82,8 @@ app.post("/notifications", async (req, res) => {
     try {
         const { userId, type, message } = req.body;
 
+        await Log("backend", "info", "handler", `Creating notification for user ${userId}`);
+
         await Log("backend", "info", "service", `Notification created for ${userId}`);
 
         res.json({
@@ -92,4 +101,6 @@ app.post("/notifications", async (req, res) => {
     }
 });
 
-app.listen(3001);
+app.listen(3001, async () => {
+    await Log("backend", "info", "handler", "Server started on port 3001");
+});

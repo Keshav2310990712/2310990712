@@ -205,3 +205,15 @@ API → Queue → Worker
 - Fault tolerance
 - Scalability
 - Reliable delivery
+
+## Stage 6: Priority Logic
+
+Notifications are prioritized based on type and recency.
+
+Priority order:
+Placement > Result > Event
+
+Each notification is assigned a score:
+score = type_weight + timestamp
+
+Top 10 notifications are returned after sorting.
