@@ -83,6 +83,9 @@ The backend acts as a proxy to:
 
 ---
 
+## Screenshots
+Provided in the screenshots folder
+
 ## Notes
 
 - No console logging (uses custom logging middleware)
