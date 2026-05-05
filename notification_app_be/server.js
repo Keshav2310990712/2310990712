@@ -4,6 +4,7 @@ const getTopNotifications = require("./priority");
 const express = require("express");
 const cors = require("cors");
 const Log = require("../logging_middleware/logger");
+const axios = require("axios");
 
 const app = express();
 app.use(cors());
@@ -98,6 +99,62 @@ app.post("/notifications", async (req, res) => {
         await Log("backend", "error", "service", "Error creating notification");
 
         res.status(500).json({ error: "Internal error" });
+    }
+});
+
+
+app.get("/external-notifications", async (req, res) => {
+
+    await Log("backend", "info", "handler", "Fetching external notifications");
+
+    try {
+        const TOKEN = process.env.ACCESS_TOKEN;
+
+        let url = `${process.env.BASE_URL}/notifications?limit=10&page=1`;
+
+        if (req.query.type) {
+            url += `&type=${req.query.type}`;
+        }
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${TOKEN}`
+            }
+        });
+
+        await Log("backend", "info", "service", "External API success");
+
+        res.json(response.data);
+
+    } catch (err) {
+        console.log("ERROR:", err.response?.data || err.message);
+        await Log("backend", "error", "service", "External API failed");
+
+        res.status(500).json({ error: "Failed to fetch" });
+    }
+});
+
+
+app.post("/log-proxy", async (req, res) => {
+
+    try {
+        const TOKEN = process.env.ACCESS_TOKEN;
+
+        await axios.post(
+            `${process.env.BASE_URL}/log`,
+            req.body,
+            {
+                headers: {
+                    Authorization: `Bearer ${TOKEN}`
+                }
+            }
+        );
+
+        res.json({ success: true });
+
+    } catch (e) {
+        console.log("ERROR:", e.response?.data || e.message);
+        res.status(500).json({ error: "log failed" });
     }
 });
 
